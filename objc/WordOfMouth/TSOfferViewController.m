@@ -20,11 +20,14 @@
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil offer:(TSOffer *)offerVal parentViewController:(UIViewController *)parentViewControllerVal delegate:(id<TSWordOfMouthDelegate>)delegateVal
 {
     if(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+
         self.offer = offerVal;
-        self.parentViewController = parentViewControllerVal;
         self.delegate = delegateVal;
         ((UIWebView *)self.view).delegate = self;
         [((UIWebView *)self.view) loadHTMLString:self.offer.markup baseURL:[NSURL URLWithString:@""]];
+
+        [parentViewControllerVal addChildViewController:self];
+
     }
     return self;
 }
