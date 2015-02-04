@@ -51,9 +51,17 @@ public class Hit {
 		return encodedTrackerName;
 	}
 
-	public String getPostData() {
+	public String getPostData(boolean debug) {
 		if (tags == null) {
-			return "";
+			if(debug){
+				return "__tsdebug=1";
+			}else{
+				return "";
+			}
+		}
+
+		if(debug){
+			tags.append("&__tsdebug=1");
 		}
 		return tags.toString();
 	}

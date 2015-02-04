@@ -182,6 +182,10 @@
 		{
 			[self addValue:[self.customFields objectForKey:key] forKey:key withPrefix:@"custom-" limitValueLength:YES];
 		}
+#ifdef DEBUG
+        [self addValue:@"1" forKey:@"__tsdebug" withPrefix:@"" limitValueLength:NO];
+#endif
+        
 	}
 }
 

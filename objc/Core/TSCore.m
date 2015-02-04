@@ -320,6 +320,11 @@
 			else
 			{
 				[TSLogging logAtLevel:kTSLoggingInfo format:@"Tapstream fired event named \"%@\"", e.name];
+                
+#ifdef DEBUG
+                [TSLogging logAtLevel:kTSLoggingInfo format:@"Response: %@", [NSJSONSerialization JSONObjectWithData:response.data options:nil error:nil]];
+#endif
+
 				[listener reportOperation:@"event-succeeded" arg:e.encodedName];
 			}
 
@@ -343,6 +348,9 @@
 		else
 		{
 			[TSLogging logAtLevel:kTSLoggingInfo format:@"Tapstream fired hit to tracker: %@", hit.trackerName];
+#ifdef DEBUG
+            [TSLogging logAtLevel:kTSLoggingInfo format:@"Response: %@", [NSJSONSerialization JSONObjectWithData:response.data options:nil error:nil]];
+#endif
 			[listener reportOperation:@"hit-succeeded"];
 		}
 

@@ -3,6 +3,8 @@ package com.tapstream.sdk;
 import java.lang.reflect.Constructor;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 
 import com.tapstream.sdk.Hit.CompletionHandler;
 
@@ -50,7 +52,16 @@ public class Tapstream implements Api {
 		delegate = new DelegateImpl();
 		platform = new PlatformImpl(app);
 		listener = new CoreListenerImpl();
-				
+
+		boolean debug;
+		try {
+			debug = ((app.getPackageManager()
+				.getPackageInfo(app.getPackageName(), 0)
+				.applicationInfo.flags) & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+		}catch(PackageManager.NameNotFoundException e){
+			debug = false;
+		}
+
 		// Using reflection, try to instantiate the ActivityCallbacks class.  ActivityCallbacks
 		// is derived from a class only available in api 14, so we expect this to fail for any
 		// android version prior to 4.  For older android versions, a dummy implementation is used.
@@ -62,9 +73,10 @@ public class Tapstream implements Api {
 	    } catch(Exception e) {
 			aes = new ActivityEventSource();
 		}
-		
-		core = new Core(delegate, platform, listener, aes, new AdvertisingIdFetcher(app), accountName, developerSecret, config);
+
+		core = new Core(delegate, platform, listener, aes, new AdvertisingIdFetcher(app), accountName, developerSecret, config, debug);
 		core.start();
+
 	}
 
 	public void fireEvent(Event e) {

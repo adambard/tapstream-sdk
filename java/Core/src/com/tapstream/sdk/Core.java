@@ -41,8 +41,9 @@ class Core {
 	private int delay = 0;
 	private boolean retainEvents = true;
 	private List<Event> retainedEvents = new ArrayList<Event>();
+        private boolean debug = false;
 
-	Core(Delegate delegate, Platform platform, CoreListener listener, ActivityEventSource activityEventSource, Runnable adIdFetcher, String accountName, String developerSecret, Config config) {
+	Core(Delegate delegate, Platform platform, CoreListener listener, ActivityEventSource activityEventSource, Runnable adIdFetcher, String accountName, String developerSecret, Config config, boolean debug) {
 		this.delegate = delegate;
 		this.platform = platform;
 		this.listener = listener;
@@ -52,6 +53,7 @@ class Core {
 
 		this.accountName = clean(accountName);
 		this.secret = developerSecret;
+                this.debug = debug;
 		makePostArgs();
 
 		firedEvents = platform.loadFiredEvents();
@@ -143,6 +145,9 @@ class Core {
 	}
 
 	public synchronized void fireEvent(final Event e) {
+		if(debug){
+			e.addPair("", "__tsdebug", "1", true);
+		}
 		// If we are retaining events, add them to a list to be sent later
 		if(retainEvents) {
 			retainedEvents.add(e);
@@ -247,6 +252,9 @@ class Core {
 					}
 				} else {
 					Logging.log(Logging.INFO, "Tapstream fired event named \"%s\"", e.getName());
+					if(debug) {
+						Logging.log(Logging.INFO, "Response: %s", response.data);
+					}
 					self.listener.reportOperation("event-succeeded", e.getEncodedName());
 				}
 
@@ -270,7 +278,7 @@ class Core {
 
 	public void fireHit(final Hit h, final Hit.CompletionHandler completion) {
 		final String url = String.format(Locale.US, HIT_URL_TEMPLATE, accountName, h.getEncodedTrackerName());
-		final String data = h.getPostData();
+		final String data = h.getPostData(debug);
 		Runnable task = new Runnable() {
 			public void run() {
 				Response response = platform.request(url, data, "POST");
@@ -279,6 +287,9 @@ class Core {
 					listener.reportOperation("hit-failed");
 				} else {
 					Logging.log(Logging.INFO, "Tapstream fired hit to tracker: %s", h.getTrackerName());
+					if(debug) {
+						Logging.log(Logging.INFO, "Response: %s", response.data);
+					}
 					listener.reportOperation("hit-succeeded");
 				}
 				if (completion != null) {
