@@ -360,12 +360,38 @@
 		return;
 	}
 
+	// Ensure user-specified completion runs on the main thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-    	[self getConversionData:[completion copy] tries:0];
+		[self getConversionData:[completion copy] tries:0 queue:dispatch_get_main_queue()];
     });
 }
 
-- (void)getConversionData:(void(^)(NSData *))completion tries:(int)tries {
+- (NSData *)getConversionDataBlocking:(int)timeout_ms
+{
+	dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+
+	__block NSData* result = nil;
+
+	void (^syncedCompletion)(NSData *) = ^(NSData* data){
+		@synchronized(self){
+			result = data;
+		}
+		dispatch_semaphore_signal(sem);
+	};
+
+	// Make sure to run on a different thread
+	dispatch_async(dispatch_queue_create("getConversionBlocking", DISPATCH_QUEUE_SERIAL), ^{
+		[self getConversionData:syncedCompletion tries:0 queue:dispatch_get_current_queue()];
+	});
+
+	dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, timeout_ms * NSEC_PER_MSEC));
+
+	@synchronized(self){
+		return [result copy];
+	}
+}
+
+- (void)getConversionData:(void(^)(NSData *))completion tries:(int)tries queue:(dispatch_queue_t)queue {
 	tries++;
 
 	NSString *url = [NSString stringWithFormat:kTSConversionUrlTemplate, secret, [platform loadUuid]];
@@ -381,8 +407,8 @@
 		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*\\[\\s*\\]\\s*$" options:0 error:&error];
 		if(error == nil && [regex numberOfMatchesInString:jsonString options:NSMatchingAnchored range:NSMakeRange(0, [jsonString length])] == 0)
 		{
-			// Call the user's completion handler in the main thread
-			dispatch_async(dispatch_get_main_queue(), ^{
+			// Call the user's completion handler in specified queue
+			dispatch_async(queue, ^{
 				completion(jsonData);
 				RELEASE(jsonData);
 				RELEASE(completion);
@@ -421,7 +447,7 @@
 		dispatch_after(
 			dispatch_time(DISPATCH_TIME_NOW, kTSConversionPollInterval * NSEC_PER_SEC),
 			dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-				[self getConversionData:completion tries:tries];
+				[self getConversionData:completion tries:tries queue:queue];
 		});
 		return;
 	}
