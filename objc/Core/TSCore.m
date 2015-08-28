@@ -381,7 +381,7 @@
 
 	// Make sure to run on a different thread
 	dispatch_async(dispatch_queue_create("getConversionBlocking", DISPATCH_QUEUE_SERIAL), ^{
-		[self getConversionData:syncedCompletion tries:0 queue:dispatch_get_current_queue()];
+		[self getConversionData:syncedCompletion tries:kTSConversionPollCount queue:dispatch_get_current_queue()];
 	});
 
 	dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, timeout_ms * NSEC_PER_MSEC));
@@ -435,7 +435,7 @@
 	if(serverError || triesExhausted)
 	{
 		// Don't try any more
-		dispatch_async(dispatch_get_main_queue(), ^{
+		dispatch_async(queue, ^{
 			completion(nil);
 			RELEASE(completion);
 		});
@@ -446,7 +446,7 @@
 		// Schedule a retry after kTSConversionPollInterval seconds
 		dispatch_after(
 			dispatch_time(DISPATCH_TIME_NOW, kTSConversionPollInterval * NSEC_PER_SEC),
-			dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+			dispatch_get_current_queue()	x, ^{
 				[self getConversionData:completion tries:tries queue:queue];
 		});
 		return;
