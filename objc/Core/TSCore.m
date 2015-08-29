@@ -9,6 +9,7 @@
 #define kTSConversionUrlTemplate @"https://reporting.tapstream.com/v1/timelines/lookup?secret=%@&event_session=%@"
 #define kTSConversionPollInterval 1
 #define kTSConversionPollCount 10
+#define kTSDefaultTimeout 10000
 
 @interface TSEvent(hidden)
 - (void)prepare:(NSDictionary *)globalEventParams;
@@ -236,7 +237,7 @@
 
 			NSString *allData = data;
 
-			TSResponse *response = [platform request:url data:allData method:@"POST"];
+			TSResponse *response = [platform request:url data:allData method:@"POST" timeout_ms:kTSDefaultTimeout];
 			bool failed = response.status < 200 || response.status >= 300;
 			bool shouldRetry = response.status < 0 || (response.status >= 500 && response.status < 600);
 
@@ -334,7 +335,7 @@
 	NSString *data = hit.postData;
 
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		TSResponse *response = [platform request:url data:data method:@"POST"];
+		TSResponse *response = [platform request:url data:data method:@"POST" timeout_ms:kTSDefaultTimeout];
 		if(response.status < 200 || response.status >= 300)
 		{
 			[TSLogging logAtLevel:kTSLoggingError format:@"Tapstream Error: Failed to fire hit, http code: %d", response.status];
@@ -362,40 +363,22 @@
 
 	// Ensure user-specified completion runs on the main thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		[self getConversionData:[completion copy] tries:0 queue:dispatch_get_main_queue()];
+		[self getConversionData:[completion copy] tries:0 timeout_ms:kTSDefaultTimeout];
     });
 }
 
-- (NSData *)getConversionDataBlocking:(int)timeout_ms
+- (void)getConversionDataBlocking:(int)timeout_ms completion:(void(^)(NSData *))completion;
 {
-	dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-
-	__block NSData* result = nil;
-
-	void (^syncedCompletion)(NSData *) = ^(NSData* data){
-		@synchronized(self){
-			result = data;
-		}
-		dispatch_semaphore_signal(sem);
-	};
-
-	// Make sure to run on a different thread
-	dispatch_async(dispatch_queue_create("getConversionBlocking", DISPATCH_QUEUE_SERIAL), ^{
-		[self getConversionData:syncedCompletion tries:kTSConversionPollCount queue:dispatch_get_current_queue()];
-	});
-
-	dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, timeout_ms * NSEC_PER_MSEC));
-
-	@synchronized(self){
-		return [result copy];
-	}
+	[self getConversionData:completion tries:kTSConversionPollCount timeout_ms:timeout_ms];
 }
 
-- (void)getConversionData:(void(^)(NSData *))completion tries:(int)tries queue:(dispatch_queue_t)queue {
+
+- (void)getConversionData:(void(^)(NSData *))completion tries:(int)tries timeout_ms:(int)timeout_ms
+{
 	tries++;
 
 	NSString *url = [NSString stringWithFormat:kTSConversionUrlTemplate, secret, [platform loadUuid]];
-	TSResponse *response = [platform request:url data:nil method:@"GET"];
+	TSResponse *response = [platform request:url data:nil method:@"GET" timeout_ms:timeout_ms];
 
 	if(response.status >= 200 && response.status < 300)
 	{
@@ -408,7 +391,7 @@
 		if(error == nil && [regex numberOfMatchesInString:jsonString options:NSMatchingAnchored range:NSMakeRange(0, [jsonString length])] == 0)
 		{
 			// Call the user's completion handler in specified queue
-			dispatch_async(queue, ^{
+			dispatch_async(dispatch_get_main_queue(), ^{
 				completion(jsonData);
 				RELEASE(jsonData);
 				RELEASE(completion);
@@ -435,7 +418,7 @@
 	if(serverError || triesExhausted)
 	{
 		// Don't try any more
-		dispatch_async(queue, ^{
+		dispatch_async(dispatch_get_main_queue(), ^{
 			completion(nil);
 			RELEASE(completion);
 		});
@@ -446,8 +429,8 @@
 		// Schedule a retry after kTSConversionPollInterval seconds
 		dispatch_after(
 			dispatch_time(DISPATCH_TIME_NOW, kTSConversionPollInterval * NSEC_PER_SEC),
-			dispatch_get_current_queue()	x, ^{
-				[self getConversionData:completion tries:tries queue:queue];
+			dispatch_get_current_queue(), ^{
+				[self getConversionData:completion tries:tries timeout_ms:timeout_ms];
 		});
 		return;
 	}

@@ -188,8 +188,9 @@
 	return [[NSBundle mainBundle] bundleIdentifier];
 }
 
-- (TSResponse *)request:(NSString *)url data:(NSString *)data method:(NSString *)method
+- (TSResponse *)request:(NSString *)url data:(NSString *)data method:(NSString *)method timeout_ms:(int)timeout_ms
 {
+
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
 	[request setHTTPMethod:method];
 	if(data != nil)
@@ -197,19 +198,36 @@
 		[request setHTTPBody:[data dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 
-	NSError *error = nil;
-	NSHTTPURLResponse *response = nil;
-	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-	if(responseData == nil || !response)
+	__block TSResponse* result = nil;
+	dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+	NSOperationQueue* queue = [[NSOperationQueue alloc] init];
+
+	[NSURLConnection sendAsynchronousRequest:request
+									   queue:queue
+						   completionHandler:^(NSURLResponse *rawResponse, NSData *responseData, NSError *error)
 	{
-		if(error != nil)
-		{
-			NSString *msg = [NSString stringWithFormat:@"%@", error];
-			return AUTORELEASE([[TSResponse alloc] initWithStatus:-1 message:msg data:nil]);
+		NSHTTPURLResponse *response = (NSHTTPURLResponse*) rawResponse;
+
+		@synchronized(self){
+			if(responseData == nil || !response)
+			{
+				if(error != nil)
+				{
+					NSString *msg = [NSString stringWithFormat:@"%@", error];
+					result = [[TSResponse alloc] initWithStatus:-1 message:msg data:nil];
+				}
+				result =  [[TSResponse alloc] initWithStatus:-1 message:@"Unknown" data:nil];
+			}
+			result = [[TSResponse alloc] initWithStatus:(int)response.statusCode message:[NSHTTPURLResponse localizedStringForStatusCode:response.statusCode] data:responseData];
 		}
-		return AUTORELEASE([[TSResponse alloc] initWithStatus:-1 message:@"Unknown" data:nil]);
+		dispatch_semaphore_signal(sem);
+	}];
+
+	dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, timeout_ms * NSEC_PER_MSEC));
+
+	@synchronized(self){
+		return AUTORELEASE(result);
 	}
-	return AUTORELEASE([[TSResponse alloc] initWithStatus:(int)response.statusCode message:[NSHTTPURLResponse localizedStringForStatusCode:response.statusCode] data:responseData]);
 }
 
 - (NSString *)systemInfoByName:(NSString *)name default:(NSString *)def

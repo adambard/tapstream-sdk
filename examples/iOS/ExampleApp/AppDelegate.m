@@ -29,30 +29,31 @@
 
     
     TSTapstream *tracker = [TSTapstream instance];
-	NSData* jsonInfo = [tracker getConversionDataBlocking:10000];
-
-	if(jsonInfo == nil)
-	{
-		// No conversion data available. This might be because Tapstream
-		// took longer than 10 seconds to respond, or because the Tapstream
-		// API server returned a 4xx response.
-	} else {
-		NSError *error      = nil;
-		NSDictionary *jsonDict  = [NSJSONSerialization JSONObjectWithData:jsonInfo
-																  options:kNilOptions
-																	error:&error];
-		
-		
-		if(jsonDict && !error)
+	[tracker getConversionDataBlocking:10000 completion:^(NSData* jsonInfo) {
+		if(jsonInfo == nil)
 		{
-			NSArray *hits = [jsonDict objectForKey:@"hits"];
-			NSArray *events = [jsonDict objectForKey:@"events"];
-			
-			NSLog(@"Hits: %@", hits);
-			NSLog(@"Events: %@", events);
-			
+			// No conversion data available. This might be because Tapstream
+			// took longer than 10 seconds to respond, or because the Tapstream
+			// API server returned a 4xx response.
+		} else {
+			NSError *error      = nil;
+			NSDictionary *jsonDict  = [NSJSONSerialization JSONObjectWithData:jsonInfo
+																	  options:kNilOptions
+																		error:&error];
+
+
+			if(jsonDict && !error)
+			{
+				NSArray *hits = [jsonDict objectForKey:@"hits"];
+				NSArray *events = [jsonDict objectForKey:@"events"];
+
+				NSLog(@"Hits: %@", hits);
+				NSLog(@"Events: %@", events);
+				
+			}
 		}
-	}
+
+	}];
 
     
     TSEvent *e = [TSEvent eventWithName:@"test-event" oneTimeOnly:NO];
