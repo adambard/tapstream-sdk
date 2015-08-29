@@ -190,23 +190,17 @@
 
 - (TSResponse *)request:(NSString *)url data:(NSString *)data method:(NSString *)method timeout_ms:(int)timeout_ms
 {
-
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
 	[request setHTTPMethod:method];
 	[request setTimeoutInterval:timeout_ms / 1000.];
-
 	if(data != nil)
 	{
 		[request setHTTPBody:[data dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 
-
 	NSError *error = nil;
 	NSHTTPURLResponse *response = nil;
 	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-
-
-
 	if(responseData == nil || !response)
 	{
 		if(error != nil)
