@@ -130,9 +130,9 @@ static TSTapstream *instance = nil;
 }
 
 
-- (void)getConversionDataBlocking:(int)timeout_ms completion:(void(^)(NSData *))completion;
+- (NSData*)getConversionDataBlocking:(int)timeout_ms;
 {
-	return [core getConversionDataBlocking:timeout_ms completion:completion];
+	return [core getConversionDataBlocking:timeout_ms];
 }
 
 

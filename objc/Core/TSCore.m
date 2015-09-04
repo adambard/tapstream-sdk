@@ -361,28 +361,64 @@
 		return;
 	}
 
-	// Ensure user-specified completion runs on the main thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		[self getConversionData:[completion copy] tries:0 timeout_ms:kTSDefaultTimeout];
     });
 }
 
-- (void)getConversionDataBlocking:(int)timeout_ms completion:(void(^)(NSData *))completion;
-{
-	[self getConversionData:completion tries:kTSConversionPollCount timeout_ms:timeout_ms];
-}
-
-
 - (void)getConversionData:(void(^)(NSData *))completion tries:(int)tries timeout_ms:(int)timeout_ms
 {
 	tries++;
+
+	BOOL error = false;
+
+	NSData* result = [self getConversionDataBlocking:timeout_ms error:&error];
+
+	if (error) // Hard error: do not retry
+	{
+		result = nil;
+	}
+	else if(result == nil && tries < kTSConversionPollCount)
+	{
+		// Schedule a retry after kTSConversionPollInterval seconds
+		dispatch_after(
+			dispatch_time(DISPATCH_TIME_NOW, kTSConversionPollInterval * NSEC_PER_SEC),
+			dispatch_get_current_queue(), ^{
+			  [self getConversionData:completion tries:tries timeout_ms:timeout_ms];
+			}
+		);
+		return;
+	}
+	else if (result == nil && tries >= kTSConversionPollCount)
+	{
+			[TSLogging logAtLevel:kTSLoggingError format:@"Tapstream Error: Tries exhausted while getting conversion data"];
+	}
+
+	// Run completion on the main thread
+	dispatch_async(
+		dispatch_get_main_queue(),
+		^{
+			completion(result);
+			RELEASE(completion);
+		}
+	);
+}
+
+- (NSData*)getConversionDataBlocking:(int)timeout_ms
+{
+	NSData* result = [self getConversionDataBlocking:timeout_ms error:nil];
+	return result;
+}
+
+- (NSData*)getConversionDataBlocking:(int)timeout_ms error:(BOOL*)error
+{
 
 	NSString *url = [NSString stringWithFormat:kTSConversionUrlTemplate, secret, [platform loadUuid]];
 	TSResponse *response = [platform request:url data:nil method:@"GET" timeout_ms:timeout_ms];
 
 	if(response.status >= 200 && response.status < 300)
 	{
-		NSData *jsonData = RETAIN(response.data);
+		NSData *jsonData = AUTORELEASE(response.data);
 		NSString *jsonString = AUTORELEASE([[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]);
 
 		// If it is not an empty json array, then make the callback
@@ -390,50 +426,19 @@
 		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*\\[\\s*\\]\\s*$" options:0 error:&error];
 		if(error == nil && [regex numberOfMatchesInString:jsonString options:NSMatchingAnchored range:NSMakeRange(0, [jsonString length])] == 0)
 		{
-			// Call the user's completion handler in specified queue
-			dispatch_async(dispatch_get_main_queue(), ^{
-				completion(jsonData);
-				RELEASE(jsonData);
-				RELEASE(completion);
-			});
-			return;
+			return jsonData;
 		} else {
-			// Cleanup for the next round of polling
-			RELEASE(jsonData);
+			return nil;
 		}
 	}
 
-	BOOL serverError = NO;
 	if (response.status >= 400 && response.status <= 499){
 		[TSLogging logAtLevel:kTSLoggingError format:@"Tapstream Error: 4XX while getting conversion data"];
-		serverError = YES;
+		if(error != nil)
+			*error = true;
 	}
 
-	BOOL triesExhausted = NO;
-	if (tries >= kTSConversionPollCount){
-		[TSLogging logAtLevel:kTSLoggingError format:@"Tapstream Error: Tries exhausted while getting conversion data"];
-		triesExhausted = YES;
-	}
-
-	if(serverError || triesExhausted)
-	{
-		// Don't try any more
-		dispatch_async(dispatch_get_main_queue(), ^{
-			completion(nil);
-			RELEASE(completion);
-		});
-		return;
-	}
-	else
-	{
-		// Schedule a retry after kTSConversionPollInterval seconds
-		dispatch_after(
-			dispatch_time(DISPATCH_TIME_NOW, kTSConversionPollInterval * NSEC_PER_SEC),
-			dispatch_get_current_queue(), ^{
-				[self getConversionData:completion tries:tries timeout_ms:timeout_ms];
-		});
-		return;
-	}
+	return nil;
 }
 
 - (int)getDelay

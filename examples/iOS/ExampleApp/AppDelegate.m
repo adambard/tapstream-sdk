@@ -29,7 +29,12 @@
 
     
     TSTapstream *tracker = [TSTapstream instance];
-	[tracker getConversionDataBlocking:10000 completion:^(NSData* jsonInfo) {
+
+	// Sync getConversionData
+	NSData* jsonInfo = [tracker getConversionDataBlocking:10000];
+
+	// Async getConversionData
+	[tracker getConversionData:^(NSData* jsonInfo) {
 		if(jsonInfo == nil)
 		{
 			// No conversion data available. This might be because Tapstream
