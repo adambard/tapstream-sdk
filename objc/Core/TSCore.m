@@ -168,25 +168,21 @@
 				[self fireEvent:[TSEvent eventWithName:eventName oneTimeOnly:YES]];
 			}
 		}
-
-		if(config.fireAutomaticOpenEvent)
-		{
-			// Fire the initial open event
-			if(config.openEventName != nil)
-			{
-				[self fireEvent:[TSEvent eventWithName:config.openEventName oneTimeOnly:NO]];
-			}
-			else
-			{
-				NSString *eventName = [NSString stringWithFormat:@"%@-%@-open", platformName, self.appName];
-				[self fireEvent:[TSEvent eventWithName:eventName oneTimeOnly:NO]];
-			}
-		}
 	}
 
 	__unsafe_unretained TSCore *me = self;
 	if(config.fireAutomaticOpenEvent)
 	{
+		// Fire the initial open event
+		if(config.openEventName != nil)
+		{
+			[self fireEvent:[TSEvent eventWithName:config.openEventName oneTimeOnly:NO]];
+		}
+		else
+		{
+			NSString *eventName = [NSString stringWithFormat:@"%@-%@-open", platformName, self.appName];
+			[self fireEvent:[TSEvent eventWithName:eventName oneTimeOnly:NO]];
+		}
 
 		// Subscribe to be notified whenever the app enters the foreground
 		[appEventSource setOpenHandler:^() {
@@ -472,16 +468,12 @@
 
 - (NSURL*)getCookieMatchURL
 {
-	NSMutableString* urlString = [NSMutableString stringWithFormat:@"https://api.taps.io/%@/cookiematch", accountName];
-	BOOL first = true;
+	NSMutableString* urlString = [NSMutableString stringWithFormat:@"https://api.taps.io/%@/cookiematch?cookiematch=true&%@", accountName, postData];
+
 	for(NSString *key in config.globalEventParams)
 	{
-		if (first){
-			[urlString appendString:@"?"];
-			first = false;
-		}else{
-			[urlString appendString:@"&"];
-		}
+		[urlString appendString:@"&"];
+
 		NSString* value = [config.globalEventParams valueForKey:key];
 		[urlString appendString:[TSUtils encodeEventPairWithPrefix:@"custom-"
 															   key:key
