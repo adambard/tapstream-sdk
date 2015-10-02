@@ -89,7 +89,7 @@ static TSTapstream *instance = nil;
 			config:config]);
 
 		[core start];
-		if(config.awaitCookieMatch){
+		if(config.attemptCookieMatch){
 			[self registerCookieMatchObserver];
 		}
         

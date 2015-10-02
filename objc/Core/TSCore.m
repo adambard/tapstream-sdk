@@ -146,7 +146,7 @@
 		self.appName = @"";
 	}
 
-	if(config.awaitCookieMatch) // cookie match replaces initial install and open events
+	if(config.attemptCookieMatch) // cookie match replaces initial install and open events
 	{
 		// Block queue until cookie match fired
 		dispatch_barrier_async(self.queue, ^{
@@ -468,8 +468,17 @@
 
 - (NSURL*)getCookieMatchURL
 {
-	NSMutableString* urlString = [NSMutableString stringWithFormat:@"https://api.taps.io/%@/cookiematch?cookiematch=true&%@", accountName, postData];
+	NSString* eventName = config.installEventName;
+	if(eventName == nil)
+	{
+		eventName = [NSString stringWithFormat:@"%@-%@-install", platformName, self.appName];
+	}
 
+	NSMutableString* urlString = [NSMutableString stringWithFormat:kTSEventUrlTemplate,
+								  accountName, eventName];
+
+	[urlString appendString:@"?cookiematch=true&"];
+	[urlString appendString:postData];
 	for(NSString *key in config.globalEventParams)
 	{
 		[urlString appendString:@"&"];
