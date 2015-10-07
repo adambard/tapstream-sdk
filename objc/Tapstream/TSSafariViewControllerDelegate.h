@@ -22,11 +22,11 @@
 @property(nonatomic, strong) void (^completion)(void);
 @property(nonatomic, weak) UIViewController* parent;
 
-- (TSSafariViewControllerDelegate*)initWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
++ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
 
 @end
 #else // IOS < 9
 @interface TSSafariViewControllerDelegate : NSObject
-- (TSSafariViewControllerDelegate*)initWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
++ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
 @end
 #endif

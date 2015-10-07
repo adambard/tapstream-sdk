@@ -149,17 +149,19 @@ static TSTapstream *instance = nil;
 
 - (void)fireCookieMatch:(UIViewController*)controller completion:(void(^)(void))completion
 {
-	if (![platform getPersistentFlagVal:kTSCookieMatchFlag]){ // Only fires once.
+	if (![platform getPersistentFlagVal:kTSCookieMatchFlag] || true){ // Only fires once.
 		[platform setPersistentFlagVal:kTSCookieMatchFlag];
 		NSURL* url = [core getCookieMatchURL];
-		TSSafariViewControllerDelegate* delegate = [[TSSafariViewControllerDelegate alloc]
-													initWithURLAndCompletion:url completion:^{
+		TSSafariViewControllerDelegate* delegate = [TSSafariViewControllerDelegate
+													createWithURLAndCompletion:url completion:^{
 														if(completion != nil){
 															completion();
 														}
 														[core fireCookieMatch];
 													}];
-		[controller presentViewController:delegate animated:NO completion:nil];
+		if(delegate != nil){
+			[controller presentViewController:delegate animated:NO completion:nil];
+		}
 	}
 }
 

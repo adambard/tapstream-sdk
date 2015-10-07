@@ -14,15 +14,16 @@
 @implementation TSSafariViewControllerDelegate
 
 
-- (TSSafariViewControllerDelegate*)initWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
++ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
 {
-	self = [self init];
-	self.url = url;
-	self.completion = completion;
-	self.view.hidden = YES;
-	self.modalPresentationStyle = UIModalPresentationOverFullScreen;
+	TSSafariViewControllerDelegate* me = [[TSSafariViewControllerDelegate alloc] init];
 
-	return self;
+	me.url = url;
+	me.completion = completion;
+	me.view.hidden = YES;
+	me.modalPresentationStyle = UIModalPresentationOverFullScreen;
+
+	return me;
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -78,12 +79,14 @@
 
 @implementation TSSafariViewControllerDelegate
 
-- (TSSafariViewControllerDelegate*)initWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
++ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
 {
 	if (completion != nil)
 	{
 		completion();
 	}
+	return nil;
 }
+@end
 #endif
 
