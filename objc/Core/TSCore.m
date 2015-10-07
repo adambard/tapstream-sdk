@@ -5,6 +5,7 @@
 
 #define kTSVersion @"2.9.6"
 #define kTSEventUrlTemplate @"https://api.tapstream.com/%@/event/%@/"
+#define kTSCookieMatchUrlTemplate @"http://api.taps.io/%@/event/%@/?cookiematch=true&%@"
 #define kTSHitUrlTemplate @"http://api.tapstream.com/%@/hit/%@.gif"
 #define kTSConversionUrlTemplate @"https://reporting.tapstream.com/v1/timelines/lookup?secret=%@&event_session=%@"
 #define kTSConversionPollInterval 1
@@ -474,11 +475,9 @@
 		eventName = [NSString stringWithFormat:@"%@-%@-install", platformName, self.appName];
 	}
 
-	NSMutableString* urlString = [NSMutableString stringWithFormat:kTSEventUrlTemplate,
-								  accountName, eventName];
+	NSMutableString* urlString = [NSMutableString stringWithFormat:kTSCookieMatchUrlTemplate,
+								  accountName, eventName, postData];
 
-	[urlString appendString:@"?cookiematch=true&"];
-	[urlString appendString:postData];
 	for(NSString *key in config.globalEventParams)
 	{
 		[urlString appendString:@"&"];
