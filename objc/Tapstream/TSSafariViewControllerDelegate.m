@@ -33,7 +33,7 @@
 	if(safController != nil){
 
 		[safController setModalPresentationStyle:UIModalPresentationOverFullScreen];
-		//safController.view.hidden = YES;
+		safController.view.hidden = YES;
 
 		safController.delegate = self;
 
