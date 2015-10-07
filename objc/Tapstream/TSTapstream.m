@@ -5,6 +5,9 @@
 #import "TSPlatformImpl.h"
 #import "TSCoreListenerImpl.h"
 #import "TSAppEventSourceImpl.h"
+#if TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <UIKit/UIKit.h>
+#endif
 
 #define kTSCookieMatchFlag @"__tapstream_cookiematchfired"
 
@@ -122,6 +125,7 @@ static TSTapstream *instance = nil;
 	SUPER_DEALLOC;
 }
 
+#if TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 - (void)registerCookieMatchObserver
 {
 	if([platform getPersistentFlagVal:kTSCookieMatchFlag]){
@@ -149,7 +153,7 @@ static TSTapstream *instance = nil;
 
 - (void)fireCookieMatch:(UIViewController*)controller completion:(void(^)(void))completion
 {
-	if (![platform getPersistentFlagVal:kTSCookieMatchFlag] || true){ // Only fires once.
+	if (![platform getPersistentFlagVal:kTSCookieMatchFlag]){ // Only fires once.
 		[platform setPersistentFlagVal:kTSCookieMatchFlag];
 		NSURL* url = [core getCookieMatchURL];
 		TSSafariViewControllerDelegate* delegate = [TSSafariViewControllerDelegate
@@ -164,6 +168,9 @@ static TSTapstream *instance = nil;
 		}
 	}
 }
+#else
+- (void)registerCookieMatchObserver {}
+#endif
 
 - (void)fireEvent:(TSEvent *)event
 {

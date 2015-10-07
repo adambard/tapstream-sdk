@@ -38,10 +38,6 @@
 
 		safController.delegate = self;
 
-		//UIViewController* parent = self.parentViewController;
-		//[self removeFromParentViewController];
-
-
 		[self presentViewController:safController animated:NO completion:nil];
 	}
 	else
@@ -66,8 +62,6 @@
 
 - (void)safariViewController:(SFSafariViewController *)controller didCompleteInitialLoad:(BOOL)didLoadSuccessfully
 {
-
-
 	[controller dismissViewControllerAnimated:false completion:^{
 		[self dismiss];
 	}];
@@ -81,11 +75,11 @@
 
 + (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
 {
-	if (completion != nil)
+	if (completion != NULL)
 	{
 		completion();
 	}
-	return nil;
+	return NULL;
 }
 @end
 #endif
