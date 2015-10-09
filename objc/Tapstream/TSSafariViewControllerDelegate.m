@@ -7,60 +7,59 @@
 //
 
 #import "TSSafariViewControllerDelegate.h"
-
-#ifdef TS_SAFARI_VIEW_CONTROLLER_ENABLED
-#import <SafariServices/SafariServices.h>
+#import "TSLogging.h"
 
 @implementation TSSafariViewControllerDelegate
 
-
-+ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
++ (void)presentSafariViewControllerWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
 {
-	TSSafariViewControllerDelegate* me = [[TSSafariViewControllerDelegate alloc] init];
+	Class safControllerClass = NSClassFromString(@"SFSafariViewController");
+	if(safControllerClass != nil){
+		id inst = [safControllerClass alloc];
+		SEL sel = NSSelectorFromString(@"initWithURL:");
+		IMP imp = [inst methodForSelector:sel];
+		UIViewController* safController = ((id (*)(id, SEL, NSURL *))imp)(inst, sel, url);
 
-	me.url = url;
-	me.completion = completion;
-	me.view.hidden = YES;
-	me.modalPresentationStyle = UIModalPresentationOverFullScreen;
+		if(safController != nil){
+			TSSafariViewControllerDelegate* me = [[TSSafariViewControllerDelegate alloc] init];
 
-	return me;
-}
+			me.completion = completion;
 
-- (void)viewDidAppear:(BOOL)animated
-{
+			me.hiddenWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
+			me.hiddenWindow.rootViewController = me;
+			me.hiddenWindow.hidden = true;
 
-	SFSafariViewController* safController = [[SFSafariViewController alloc]
-											 initWithURL:self.url];
-	if(safController != nil){
+			me.view.hidden = YES;
+			me.modalPresentationStyle = UIModalPresentationOverFullScreen;
 
-		[safController setModalPresentationStyle:UIModalPresentationOverFullScreen];
-		safController.view.hidden = YES;
+			sel = NSSelectorFromString(@"setDelegate:");
+			imp = [safController methodForSelector:sel];
+			((void (*)(id, SEL, id))imp)(safController, sel, self);
 
-		safController.delegate = self;
-
-		[self presentViewController:safController animated:NO completion:nil];
-	}
-	else
-	{
-		[self dismiss];
+			[me.hiddenWindow makeKeyAndVisible];
+			[me presentViewController:safController animated:YES completion:nil];
+		}
+	}else{
+		[TSLogging logAtLevel:kTSLoggingWarn format:@"Tapstream could not load SFSafariViewController, is Safari Services framework enabled?"];
 	}
 }
 
 - (void)dismiss
 {
-	[self dismissViewControllerAnimated:false completion:self.completion];
+	[self.hiddenWindow.rootViewController dismissViewControllerAnimated:NO completion:self.completion];
 }
 
-- (NSArray<UIActivity *> *)safariViewController:(SFSafariViewController *)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title
+// SFSafariViewController delegate methods
+- (NSArray<UIActivity *> *)safariViewController:(id)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title
 {
 	return nil;
 }
 
-- (void)safariViewControllerDidFinish:(SFSafariViewController *)controller
+- (void)safariViewControllerDidFinish:(id)controller
 {
 }
 
-- (void)safariViewController:(SFSafariViewController *)controller didCompleteInitialLoad:(BOOL)didLoadSuccessfully
+- (void)safariViewController:(id)controller didCompleteInitialLoad:(BOOL)didLoadSuccessfully
 {
 	[controller dismissViewControllerAnimated:false completion:^{
 		[self dismiss];
@@ -68,19 +67,3 @@
 }
 
 @end
-
-#else // IOS < 9, define noop implementation
-
-@implementation TSSafariViewControllerDelegate
-
-+ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
-{
-	if (completion != NULL)
-	{
-		completion();
-	}
-	return NULL;
-}
-@end
-#endif
-

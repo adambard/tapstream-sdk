@@ -10,26 +10,15 @@
 
 #import "TSHelpers.h"
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000 && (TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
-
-#ifndef TS_SAFARI_VIEW_CONTROLLER_ENABLED
-#define TS_SAFARI_VIEW_CONTROLLER_ENABLED
+#if (TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
+#import <UIKit/UIKit.h>
 #endif
 
-#import <SafariServices/SafariServices.h>
-#import <UIKit/UIKit.h>
-
-@interface TSSafariViewControllerDelegate : UIViewController<SFSafariViewControllerDelegate>
+@interface TSSafariViewControllerDelegate : UIViewController
 
 @property(nonatomic, STRONG_OR_RETAIN) NSURL* url;
-@property(nonatomic, STRONG_OR_RETAIN) void (^completion)(void);
-@property(nonatomic, STRONG_OR_RETAIN) UIViewController* parent;
+@property(nonatomic, copy) void (^completion)(void);
+@property(nonatomic, STRONG_OR_RETAIN) UIWindow* hiddenWindow;
 
-+ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
-
++ (void)presentSafariViewControllerWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
 @end
-#else // IOS < 9
-@interface TSSafariViewControllerDelegate : NSObject
-+ (TSSafariViewControllerDelegate*)createWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion;
-@end
-#endif

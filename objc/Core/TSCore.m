@@ -5,8 +5,8 @@
 
 #define kTSVersion @"2.9.6"
 #define kTSEventUrlTemplate @"https://api.tapstream.com/%@/event/%@/"
-#define kTSCookieMatchUrlTemplate @"http://api.taps.io/%@/event/%@/?cookiematch=true&%@"
-#define kTSHitUrlTemplate @"http://api.tapstream.com/%@/hit/%@.gif"
+#define kTSCookieMatchUrlTemplate @"https://api.taps.io/%@/event/%@/?cookiematch=true&%@"
+#define kTSHitUrlTemplate @"https://api.tapstream.com/%@/hit/%@.gif"
 #define kTSConversionUrlTemplate @"https://reporting.tapstream.com/v1/timelines/lookup?secret=%@&event_session=%@"
 #define kTSConversionPollInterval 1
 #define kTSConversionPollCount 10
