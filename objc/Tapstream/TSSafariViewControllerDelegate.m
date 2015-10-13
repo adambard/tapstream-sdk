@@ -34,7 +34,7 @@
 
 			sel = NSSelectorFromString(@"setDelegate:");
 			imp = [safController methodForSelector:sel];
-			((void (*)(id, SEL, id))imp)(safController, sel, self);
+			((void (*)(id, SEL, id))imp)(safController, sel, me);
 
 			[me.hiddenWindow makeKeyAndVisible];
 			[me presentViewController:safController animated:YES completion:nil];
