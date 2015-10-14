@@ -9,19 +9,19 @@
 #import "TSSafariViewControllerDelegate.h"
 #import "TSLogging.h"
 
+#if (TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
 @implementation TSSafariViewControllerDelegate
 
 + (void)presentSafariViewControllerWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
 {
 	Class safControllerClass = NSClassFromString(@"SFSafariViewController");
 	if(safControllerClass != nil){
-		id inst = [safControllerClass alloc];
-		SEL sel = NSSelectorFromString(@"initWithURL:");
-		IMP imp = [inst methodForSelector:sel];
-		UIViewController* safController = ((id (*)(id, SEL, NSURL *))imp)(inst, sel, url);
+		UIViewController* safController = [[safControllerClass alloc] initWithURL:url];
 
 		if(safController != nil){
 			TSSafariViewControllerDelegate* me = [[TSSafariViewControllerDelegate alloc] init];
+
+			me.safController = RETAIN(safController);
 
 			me.completion = completion;
 
@@ -32,9 +32,7 @@
 			me.view.hidden = YES;
 			me.modalPresentationStyle = UIModalPresentationOverFullScreen;
 
-			sel = NSSelectorFromString(@"setDelegate:");
-			imp = [safController methodForSelector:sel];
-			((void (*)(id, SEL, id))imp)(safController, sel, me);
+			[safController performSelector:@selector(setDelegate:) withObject:me];
 
 			[me.hiddenWindow makeKeyAndVisible];
 			[me presentViewController:safController animated:YES completion:nil];
@@ -44,9 +42,12 @@
 	}
 }
 
-- (void)dismiss
+
+- (void)dealloc
 {
-	[self.hiddenWindow.rootViewController dismissViewControllerAnimated:NO completion:self.completion];
+	RELEASE(self.safController);
+	RELEASE(self.hiddenWindow);
+	SUPER_DEALLOC;
 }
 
 // SFSafariViewController delegate methods
@@ -62,8 +63,24 @@
 - (void)safariViewController:(id)controller didCompleteInitialLoad:(BOOL)didLoadSuccessfully
 {
 	[controller dismissViewControllerAnimated:false completion:^{
-		[self dismiss];
+		[self.hiddenWindow.rootViewController dismissViewControllerAnimated:NO completion:nil];
+		if(self.completion != nil){
+			self.completion();
+		}
 	}];
 }
 
 @end
+
+#else
+// Stub for Mac
+@implementation TSSafariViewControllerDelegate
++ (void)presentSafariViewControllerWithURLAndCompletion:(NSURL*)url completion:(void (^)(void))completion
+{
+	[TSLogging logAtLevel:kTSLoggingError format:@"Tapstream cookie matching should only be used on iOS devices"];
+	if (completion != nil){
+		completion();
+	}
+}
+@end
+#endif

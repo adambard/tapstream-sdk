@@ -152,12 +152,13 @@
 		// Block queue until cookie match fired
 		dispatch_barrier_async(self.queue, ^{
 			dispatch_semaphore_wait(self.cookieMatchFired, DISPATCH_TIME_FOREVER);
+			[platform registerFirstRun];
 			NSLog(@"Tapstream: Cookie Match Complete");
 		});
 	}
 	else
 	{
-		if(config.fireAutomaticInstallEvent)
+		if(config.fireAutomaticInstallEvent && [platform isFirstRun])
 		{
 			if(config.installEventName != nil)
 			{
@@ -168,6 +169,7 @@
 				NSString *eventName = [NSString stringWithFormat:@"%@-%@-install", platformName, self.appName];
 				[self fireEvent:[TSEvent eventWithName:eventName oneTimeOnly:YES]];
 			}
+			[platform registerFirstRun];			
 		}
 	}
 

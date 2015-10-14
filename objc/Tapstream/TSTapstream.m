@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #endif
 
-#define kTSCookieMatchFlag @"__tapstream_cookiematchfired"
 
 @interface TSDelegateImpl : NSObject<TSDelegate> {
 	TSTapstream *ts;
@@ -128,15 +127,15 @@ static TSTapstream *instance = nil;
 #if TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 - (void)registerCookieMatchObserver
 {
-	if([platform getPersistentFlagVal:kTSCookieMatchFlag]){
-		// Already sent, let core know
-		[core fireCookieMatch];
-	}else{
+	if([platform isFirstRun]){
 		[[NSNotificationCenter defaultCenter]
 		 addObserver:self
 			selector:@selector(handleNotification:)
-				name:UIApplicationDidBecomeActiveNotification
-			  object:nil];
+		 name:UIApplicationDidBecomeActiveNotification
+		 object:nil];
+	}else{
+		// Already sent, let core know
+		[core fireCookieMatch];
 	}
 }
 
@@ -153,8 +152,7 @@ static TSTapstream *instance = nil;
 
 - (void)fireCookieMatch:(UIViewController*)controller completion:(void(^)(void))completion
 {
-	if (![platform getPersistentFlagVal:kTSCookieMatchFlag]){ // Only fires once.
-		[platform setPersistentFlagVal:kTSCookieMatchFlag];
+	if ([platform isFirstRun]){ // Only fires once.
 		NSURL* url = [core getCookieMatchURL];
 
 		[TSSafariViewControllerDelegate
