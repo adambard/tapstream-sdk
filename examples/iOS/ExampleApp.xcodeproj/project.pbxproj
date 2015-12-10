@@ -32,8 +32,12 @@
 		12A98535185A67A500D388CD /* TSPlatformImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 12A98529185A67A500D388CD /* TSPlatformImpl.m */; };
 		12A98536185A67A500D388CD /* TSTapstream.m in Sources */ = {isa = PBXBuildFile; fileRef = 12A9852B185A67A500D388CD /* TSTapstream.m */; };
 		12FFCF0A183FE5B300D54F4E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12FFCF09183FE5B300D54F4E /* StoreKit.framework */; };
-		662003871BC7432900ACED07 /* TSSafariViewControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 662003861BC7432900ACED07 /* TSSafariViewControllerDelegate.m */; settings = {ASSET_TAGS = (); }; };
+		662003871BC7432900ACED07 /* TSSafariViewControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 662003861BC7432900ACED07 /* TSSafariViewControllerDelegate.m */; };
 		662003901BC7758400ACED07 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6620038F1BC7758400ACED07 /* SafariServices.framework */; };
+		663B0BE81C194C550042F0EE /* TSLander.m in Sources */ = {isa = PBXBuildFile; fileRef = 663B0BE11C194C550042F0EE /* TSLander.m */; };
+		663B0BE91C194C550042F0EE /* TSLanderController.m in Sources */ = {isa = PBXBuildFile; fileRef = 663B0BE31C194C550042F0EE /* TSLanderController.m */; };
+		663B0BEA1C194C550042F0EE /* TSLanderDelegateWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 663B0BE61C194C550042F0EE /* TSLanderDelegateWrapper.m */; };
+		663B0BEB1C194C550042F0EE /* TSLanderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 663B0BE71C194C550042F0EE /* TSLanderView.xib */; };
 		B5916E6A1A12CA3F00EFC9A6 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5916E691A12CA3F00EFC9A6 /* AdSupport.framework */; };
 /* End PBXBuildFile section */
 
@@ -90,6 +94,14 @@
 		662003851BC7432900ACED07 /* TSSafariViewControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSSafariViewControllerDelegate.h; sourceTree = "<group>"; };
 		662003861BC7432900ACED07 /* TSSafariViewControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSSafariViewControllerDelegate.m; sourceTree = "<group>"; };
 		6620038F1BC7758400ACED07 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
+		663B0BE01C194C550042F0EE /* TSLander.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSLander.h; sourceTree = "<group>"; };
+		663B0BE11C194C550042F0EE /* TSLander.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSLander.m; sourceTree = "<group>"; };
+		663B0BE21C194C550042F0EE /* TSLanderController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSLanderController.h; sourceTree = "<group>"; };
+		663B0BE31C194C550042F0EE /* TSLanderController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSLanderController.m; sourceTree = "<group>"; };
+		663B0BE41C194C550042F0EE /* TSLanderDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSLanderDelegate.h; sourceTree = "<group>"; };
+		663B0BE51C194C550042F0EE /* TSLanderDelegateWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSLanderDelegateWrapper.h; sourceTree = "<group>"; };
+		663B0BE61C194C550042F0EE /* TSLanderDelegateWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSLanderDelegateWrapper.m; sourceTree = "<group>"; };
+		663B0BE71C194C550042F0EE /* TSLanderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TSLanderView.xib; sourceTree = "<group>"; };
 		B5916E691A12CA3F00EFC9A6 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -204,6 +216,14 @@
 		12A98522185A67A500D388CD /* Tapstream */ = {
 			isa = PBXGroup;
 			children = (
+				663B0BE01C194C550042F0EE /* TSLander.h */,
+				663B0BE11C194C550042F0EE /* TSLander.m */,
+				663B0BE21C194C550042F0EE /* TSLanderController.h */,
+				663B0BE31C194C550042F0EE /* TSLanderController.m */,
+				663B0BE41C194C550042F0EE /* TSLanderDelegate.h */,
+				663B0BE51C194C550042F0EE /* TSLanderDelegateWrapper.h */,
+				663B0BE61C194C550042F0EE /* TSLanderDelegateWrapper.m */,
+				663B0BE71C194C550042F0EE /* TSLanderView.xib */,
 				662003851BC7432900ACED07 /* TSSafariViewControllerDelegate.h */,
 				662003861BC7432900ACED07 /* TSSafariViewControllerDelegate.m */,
 				12A98523185A67A500D388CD /* bin */,
@@ -284,6 +304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				12042FF4167D456200F509B7 /* InfoPlist.strings in Resources */,
+				663B0BEB1C194C550042F0EE /* TSLanderView.xib in Resources */,
 				12042FFC167D456200F509B7 /* Default.png in Resources */,
 				12042FFE167D456200F509B7 /* Default@2x.png in Resources */,
 				12043000167D456200F509B7 /* Default-568h@2x.png in Resources */,
@@ -301,10 +322,13 @@
 			files = (
 				12A98532185A67A500D388CD /* TSUtils.m in Sources */,
 				12042FF6167D456200F509B7 /* main.m in Sources */,
+				663B0BEA1C194C550042F0EE /* TSLanderDelegateWrapper.m in Sources */,
 				12A98534185A67A500D388CD /* TSCoreListenerImpl.m in Sources */,
 				12A98533185A67A500D388CD /* TSAppEventSourceImpl.m in Sources */,
 				662003871BC7432900ACED07 /* TSSafariViewControllerDelegate.m in Sources */,
 				12042FFA167D456200F509B7 /* AppDelegate.m in Sources */,
+				663B0BE91C194C550042F0EE /* TSLanderController.m in Sources */,
+				663B0BE81C194C550042F0EE /* TSLander.m in Sources */,
 				12A98535185A67A500D388CD /* TSPlatformImpl.m in Sources */,
 				12A98530185A67A500D388CD /* TSLogging.m in Sources */,
 				12043009167D456200F509B7 /* MasterViewController.m in Sources */,
