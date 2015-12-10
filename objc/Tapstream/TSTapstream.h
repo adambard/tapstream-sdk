@@ -31,5 +31,6 @@
 - (void)getConversionData:(void(^)(NSData *))completion;
 - (NSData*)getConversionDataBlocking:(int)timeout_ms;
 - (void)showLanderIfExistsWithDelegate:(id<TSLanderDelegate>)delegate;
+- (BOOL)handleContinueUserActivity:(NSUserActivity*)activity completion:(void(^)(NSString*))completion;
 
 @end

@@ -6,6 +6,7 @@
 #define kTSVersion @"2.10.0"
 #define kTSEventUrlTemplate @"https://api.tapstream.com/%@/event/%@/"
 #define kTSCookieMatchUrlTemplate @"https://api.taps.io/%@/event/%@/?cookiematch=true&%@"
+#define kTSDeeplinkUrlTemplate @"https://api.tapstream.com/%@/deeplink/?secret=%@&event_session=%@&%@"
 #define kTSHitUrlTemplate @"https://api.tapstream.com/%@/hit/%@.gif"
 #define kTSLanderUrlTemplate @"https://reporting.tapstream.com/v1/in_app_landers/display/?secret=%@&event_session=%@"
 #define kTSConversionUrlTemplate @"https://reporting.tapstream.com/v1/timelines/lookup?secret=%@&event_session=%@"
@@ -654,6 +655,40 @@
 
 	NSString *shortVersion = config.hardcodedBundleShortVersionString ? config.hardcodedBundleShortVersionString : [platform getBundleShortVersion];
 	[self appendPostPairWithPrefix:@"" key:@"receipt-short-version" value:shortVersion];
+}
+
+- (void)handleDeeplink:(NSURL*) url completion:(void(^)(NSString*))completion
+{
+	NSMutableString* urlString = [NSMutableString stringWithFormat:kTSDeeplinkUrlTemplate,
+								  accountName, secret, [platform loadUuid], url.parameterString];
+
+	[platform fireCookieMatch:[NSURL URLWithString:urlString]
+				   completion:^(TSResponse* response){
+					   if (response.status >= 200 && response.status < 300){
+
+						   NSData *jsonData = AUTORELEASE(response.data);
+						   NSError* error = nil;
+						   NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData
+																					options:kNilOptions
+																					  error:&error];
+						   if(error != nil){
+							   NSString* url = [jsonDict objectForKey:@"registeredDeeplinkUrl"];
+							   if (url != nil){
+								   [TSLogging logAtLevel:kTSLoggingInfo format:@"Deeplink registreation succeeded"];
+								   completion(url);
+								   return;
+							   }
+						   }else{
+							   [TSLogging logAtLevel:kTSLoggingWarn format:@"Deeplink registration succeeded, but no registered deeplink was reported"];
+						   }
+
+					   }else{
+						   [TSLogging logAtLevel:kTSLoggingWarn format:@"Deeplink registration failed, status: %d", response.status];
+					   }
+					   completion(nil);
+					   return;
+				   }];
+
 }
 
 

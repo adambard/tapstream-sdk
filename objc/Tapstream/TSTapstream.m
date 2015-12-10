@@ -175,6 +175,16 @@ static TSTapstream *instance = nil;
     [event addValue:medium forKey:@"medium"];
     [self fireEvent:event];
 }
+
+- (BOOL)handleContinueUserActivity:(NSUserActivity*)activity completion:(void(^)(NSString*))completion
+{
+	if(activity.activityType == NSUserActivityTypeBrowsingWeb){
+		[core handleDeeplink:activity.webpageURL completion:completion];
+		return YES;
+	}
+	return NO;
+}
+
 #if TEST_IOS || TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 - (TSLander*)fetchLanderIfNotShown{
 	NSHTTPURLResponse *response;

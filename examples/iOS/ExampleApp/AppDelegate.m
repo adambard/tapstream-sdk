@@ -128,6 +128,14 @@
     }
 }
 
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray *restorableObjects))restorationHandler
+{
+	return [[TSTapstream instance] handleContinueUserActivity:userActivity
+												   completion:^(NSString* url){
+													   NSLog(@"Deeplink registered url: %@", url);
+												   }];
+}
+
 
 							
 - (void)applicationWillResignActive:(UIApplication *)application

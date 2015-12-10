@@ -49,5 +49,6 @@
 - (NSURL*)makeCookieMatchURL:(NSString*)eventName data:(NSString*)data;
 - (NSMutableString *)postData;
 - (void)dispatchOnQueue:(void(^)())completion;
+- (void)handleDeeplink:(NSURL*) url completion:(void(^)(NSString*))completion;
 
 @end
