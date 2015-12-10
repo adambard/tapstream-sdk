@@ -176,9 +176,9 @@ static TSTapstream *instance = nil;
     [self fireEvent:event];
 }
 
-- (BOOL)handleContinueUserActivity:(NSUserActivity*)activity completion:(void(^)(NSString*))completion
+- (BOOL)handleContinueUserActivity:(NSUserActivity*)activity completion:(void(^)())completion
 {
-	if(activity.activityType == NSUserActivityTypeBrowsingWeb){
+	if([activity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]){
 		[core handleDeeplink:activity.webpageURL completion:completion];
 		return YES;
 	}
