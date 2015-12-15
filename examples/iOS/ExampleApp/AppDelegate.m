@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "TSTapstream.h"
 
+
 @implementation AppDelegate
 
 @synthesize products, request;
@@ -25,14 +26,21 @@
     TSConfig *config = [TSConfig configWithDefaults];
 	config.attemptCookieMatch = true;
     [config.globalEventParams setValue:@25.4 forKey:@"degrees"];
+
+	
     
     [TSTapstream createWithAccountName:@"sdktest" developerSecret:@"YGP2pezGTI6ec48uti4o1w" config:config];
+    //[TSTapstream createWithAccountName:@"tapfolio" developerSecret:@"hUaoyBTxQsC5YVeStA7KPQ" config:config];
+
 
     
     TSTapstream *tracker = [TSTapstream instance];
 
 	// Sync getConversionData
 	NSData* jsonInfo = [tracker getConversionDataBlocking:10000];
+
+
+
 
 	// Async getConversionData
 	[tracker getConversionData:^(NSData* jsonInfo) {
@@ -74,6 +82,13 @@
     request = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithArray:productIds]];
     request.delegate = self;
     [request start];
+
+	//NSUserActivity* activity = [[NSUserActivity alloc] initWithActivityType:NSUserActivityTypeBrowsingWeb];
+	//[activity setWebpageURL:[NSURL URLWithString:@"http://taps.io/asdfasdf"]];
+
+	//[[TSTapstream instance] handleContinueUserActivity:activity completion:^{
+	//	NSLog(@"Continued");
+	//}];
     
     return YES;
 }

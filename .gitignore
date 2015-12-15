@@ -49,3 +49,5 @@ xcshareddata/
 *.sbr
 *.sdf
 *.opensdf
+
+/examples/Unity/Library

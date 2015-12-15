@@ -9,6 +9,7 @@
 #import "MasterViewController.h"
 
 #import "DetailViewController.h"
+#import <SafariServices/SafariServices.h>
 
 @interface MasterViewController () {
     NSMutableArray *_objects;
